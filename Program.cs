@@ -1,45 +1,63 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 
-namespace Fivet.ZeroIce
+namespace Fivet.Server
 {
-
-    
-    class TheSystemImpl : model.TheSystemDisp_ {
-         public override long getDelay(long clientTime, Ice.Current current)
-        {
-            return DateTime.Now.Ticks - clientTime;
-        }
-    }
 
     class Program
     {
-        
+     
         static int Main(string[] args)
         {
-            try
-            {
-                using(Ice.Communicator communicator = Ice.Util.initialize(ref args))
-                {
-                    var adapter =
-                        communicator.createObjectAdapterWithEndpoints("TheAdapter", "default -p 8080 -z");
-                    adapter.add(new TheSystemImpl(), Ice.Util.stringToIdentity("cl.ucn.disc.pdis.fivet.zeroice.model.TheSystem"));
-                    adapter.activate();
 
-                    Console.WriteLine("Waiting for connections ..");
+            CreateHostBuilder(args).Build().Run();
 
-                    communicator.waitForShutdown();
-
-                    
-                }
-            }
-            catch(Exception e)
-            {
-                Console.Error.WriteLine(e);
-                return 1;
-            }
             return 0;
+
         }
+
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host
+                .CreateDefaultBuilder(args)
+                // Development, Staging, Production
+                .UseEnvironment("Development")
+                // Logging configuration
+                .ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    logging.AddConsole(options =>
+                    {
+                        options.IncludeScopes = true;
+                        options.TimestampFormat = "[yyyyMMdd.HHmmss.fff]";
+                        options.DisableColors = false;
+                    });
+                    logging.SetMinimumLevel(LogLevel.Trace);
+                })
+                // Enable Control+C listener
+                .UseConsoleLifetime()
+                // Service inside the DI
+                .ConfigureServices((hostContext, services) =>
+                {
+                    // The FivetService
+                    services.AddHostedService<FivetService>();
+                    // The logger
+                    services.AddLogging();
+                    // Yhe wait 4 finish
+                    services.Configure<HostOptions>(option => 
+                    {
+                        option.ShutdownTimeout = System.TimeSpan.FromSeconds(15);
+                    });       
+                });
+        }
+        
     }
+
+    
+
+
 
 
 
