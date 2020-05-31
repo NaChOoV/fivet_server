@@ -2,6 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
+using Fivet.Dao;
+using Fivet.ZeroIce;
+using Fivet.ZeroIce.model;
 
 namespace Fivet.Server
 {
@@ -40,11 +43,18 @@ namespace Fivet.Server
                 .UseConsoleLifetime()
                 // Service inside the DI
                 .ConfigureServices((hostContext, services) =>
-                {
+                {    
+                    // TheSystem
+                    services.AddSingleton<TheSystemDisp_, TheSystemImpl>();
+                    // Contratos
+                    services.AddSingleton<ContratosDisp_, ContratosImpl>();
+                    // The Fivet Context
+                    services.AddDbContext<FivetContext>();
                     // The FivetService
                     services.AddHostedService<FivetService>();
                     // The logger
                     services.AddLogging();
+    
                     // Yhe wait 4 finish
                     services.Configure<HostOptions>(option => 
                     {

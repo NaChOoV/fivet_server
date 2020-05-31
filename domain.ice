@@ -29,12 +29,13 @@ module model {
     /**
      * Clase Persona
      */
+     ["cs:property"]
      class Persona{
 
         /**
          * Primary Key
          */
-        int id;
+        int uid;
 
         /**
          * Rut: 193982336
